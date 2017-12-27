@@ -105,3 +105,8 @@ ENV/
 
 # data
 data/mnist*
+
+# folders
+ckpts/
+logs/
+vis/

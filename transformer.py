@@ -42,8 +42,9 @@ def spatial_transformer_network(input_fmap, theta, out_dims=None, **kwargs):
     B = tf.shape(input_fmap)[0]
     H = 60 # tf.shape(input_fmap)[1]
     W = 60 # tf.shape(input_fmap)[2]
-    C = 60 # tf.shape(input_fmap)[3]
-    print ('input_fmap/shape: {}'.format(input_fmap))
+    C = 1 # tf.shape(input_fmap)[3]
+    print ('input_fmap: {}'.format(input_fmap))
+    print ('shape: {}'.format(tf.shape(input_fmap)))
     print ('HWC: {}x{}x{}'.format(H, W, C))
     print ('input_fmap: {}'.format(input_fmap.get_shape()))
 
