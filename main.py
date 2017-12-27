@@ -20,12 +20,14 @@ np.random.seed(42)
 
 # global params
 VIEW = False
-SAMPLE = True
+SAMPLE = False
 RESTORE = False
 MODE = 'train'
+VIS = False
 
 # directory paths
 root_dir = '/Users/Chandrachud/Desktop/!2.Love/m.misc/STNs/spatial-transformer-network/'
+root_dir = '/home/chandrachud_basavaraj/STNs/spatial-transformer-network/'
 data_dir = root_dir + 'data/'
 logs_dir = root_dir + 'logs/'
 save_dir = root_dir + 'ckpts/'
@@ -391,28 +393,29 @@ def main():
 					break
 
 				# for plotting
-				if i_global == 1:
-					print("Plotting input imgs...")
-					input_imgs = batch_X_train[:9]
-					input_imgs = np.reshape(input_imgs, [-1, 60, 60])
+				if VIS:
+					if i_global == 1:
+						print("Plotting input imgs...")
+						input_imgs = batch_X_train[:9]
+						input_imgs = np.reshape(input_imgs, [-1, 60, 60])
+						plt.clf()
+						for j in range(9):
+							plt.subplot(3, 3, j+1)
+							plt.imshow(input_imgs[j], cmap='gray')
+							plt.axis('off')
+						fig.canvas.draw()
+						plt.savefig(vis_path + 'epoch_0.png', bbox_inches='tight')
+
+					# plotting
+					thetas = sess.run(h_trans, feed_dict={X: batch_X_train, phase: True})
+					thetas = thetas[0:9].squeeze()
 					plt.clf()
 					for j in range(9):
 						plt.subplot(3, 3, j+1)
-						plt.imshow(input_imgs[j], cmap='gray')
+						plt.imshow(thetas[j], cmap='gray')
 						plt.axis('off')
 					fig.canvas.draw()
-					plt.savefig(vis_path + 'epoch_0.png', bbox_inches='tight')
-
-				# plotting
-				thetas = sess.run(h_trans, feed_dict={X: batch_X_train, phase: True})
-				thetas = thetas[0:9].squeeze()
-				plt.clf()
-				for j in range(9):
-					plt.subplot(3, 3, j+1)
-					plt.imshow(thetas[j], cmap='gray')
-					plt.axis('off')
-				fig.canvas.draw()
-				plt.savefig(vis_path + 'epoch_' + str(i_global) + '.png', bbox_inches='tight')
+					plt.savefig(vis_path + 'epoch_' + str(i_global) + '.png', bbox_inches='tight')
 
 			toc = time.time()
 			print("Time: {:.2f}s".format(toc-tic))

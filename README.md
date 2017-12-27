@@ -86,6 +86,10 @@ h_fc1 = tf.matmul(tf.zeros([B, H*W*C]), W_fc1) + b_fc1
 h_trans = spatial_transformer_network(x, h_fc1)
 ```
 
+## MNIST
+
+wget -N https://s3.amazonaws.com/lasagne/recipes/datasets/mnist_cluttered_60x60_6distortions.npz
+
 ## Attribution
 
 - [Torch Blog Post on STN's](http://torch.ch/blog/2015/09/07/spatial_transformers.html)
