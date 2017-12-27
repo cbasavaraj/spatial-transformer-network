@@ -1,13 +1,16 @@
 import os
 import time
+
 import numpy as np
 import tensorflow as tf
+
 import matplotlib.pyplot as plt
 
 from utils.data_utils import *
 from utils.vis_utils import *
 from utils.layer_utils import *
 from utils.print_utils import *
+
 from transformer import spatial_transformer_network as stn
 
 '''tensorboard --logdir=/home/kevin/Desktop/transformer/logs/mnist/1 --port=6006'''
@@ -16,16 +19,17 @@ from transformer import spatial_transformer_network as stn
 np.random.seed(42)
 
 # global params
-SAMPLE = True
 VIEW = False
+SAMPLE = True
 RESTORE = False
 MODE = 'train'
 
 # directory paths
-root_dir = '/home/kevin/Desktop/transformer/data/'
-logs_dir = '/home/kevin/Desktop/transformer/logs/'
-save_dir = '/home/kevin/Desktop/transformer/checkpoints/'
-vis_path = '/home/kevin/Desktop/transformer/samples/'
+root_dir = '/Users/Chandrachud/Desktop/!2.Love/m.misc/STNs/spatial-transformer-network/'
+data_dir = root_dir + 'data/'
+logs_dir = root_dir + 'logs/'
+save_dir = root_dir + 'ckpts/'
+vis_path = root_dir + 'vis/'
 
 # network params
 H, W, C = 60, 60, 1
@@ -47,7 +51,7 @@ X = tf.placeholder(tf.float32, [None, H, W, C], name='X')
 y = tf.placeholder(tf.uint8, [None, num_classes], name='y')
 phase = tf.placeholder(tf.bool, name='phase')
 
-def load_data(root_dir, view_grid=False):
+def load_data(data_dir, view_grid=False):
 	"""
 	Utility function for loading the cluttered MNIST data.
 
@@ -65,7 +69,7 @@ def load_data(root_dir, view_grid=False):
 	- y_valid: (10000, 10)
 	"""
 	mnist_cluttered = "mnist_cluttered_60x60_6distortions.npz"
-	data = np.load(root_dir + mnist_cluttered)
+	data = np.load(data_dir + mnist_cluttered)
 
 	X_train, y_train = data['x_train'], data['y_train']
 	X_valid, y_valid = data['x_valid'], data['y_valid']
@@ -177,9 +181,12 @@ def build_convnet():
 	fc1_loc = Dense(pool2_loc_flat, pool2_loc_size, 2048, use_relu=False, name='fc1_loc')
 	fc2_loc = Dense(fc1_loc, 2048, 512, use_relu=True, name='fc2_loc')
 	fc3_loc = Dense(fc2_loc, 512, 6, use_relu=False, trans=True, name='fc3_loc')
+	
+	print ('fc3_loc: {}'.format(fc3_loc.get_shape()))
 
 	# spatial transformer
 	h_trans = stn(X, fc3_loc)
+	print ('h_trans: {}'.format(h_trans.get_shape()))
 
 	# convnet
 	conv1 = Conv2D(X, 1, 5, 32, name='conv1')
@@ -208,12 +215,12 @@ def main():
 
 	# load the data
 	print("Loading the data...")
-	X_train, y_train, X_test, y_test, X_valid, y_valid = load_data(root_dir)
+	X_train, y_train, X_test, y_test, X_valid, y_valid = load_data(data_dir)
 
 	# sanity check dimensions
-	# print("Train: {}".format(X_train.shape))
-	# print("Test: {}".format(X_test.shape))
-	# print("Valid: {}".format(X_valid.shape))
+	print("Train: {}".format(X_train.shape))
+	print("Test: {}".format(X_test.shape))
+	print("Valid: {}".format(X_valid.shape))
 
 	# let's view a small sample
 	if VIEW:
@@ -230,13 +237,14 @@ def main():
 	num_train = X_train.shape[0]
 	gd_truth = np.argmax(y_train, axis=1)
 
-	# # let's check the frequencies of each class
-	# plt.hist(gd_truth, bins=num_classes)
-	# plt.title("Ground Truth Labels")
-	# plt.xlabel("Class")
-	# plt.ylabel("Frequency")
-	# plt.show()
-
+	# let's check the frequencies of each class
+	if False:
+		plt.hist(gd_truth, bins=num_classes)
+		plt.title("Ground Truth Labels")
+		plt.xlabel("Class")
+		plt.ylabel("Frequency")
+		plt.show()
+	
 	print("Building ConvNet...")
 	conv1_loc = Conv2D(X, 1, 5, 32, name='conv1_loc')
 	pool1_loc = MaxPooling2D(conv1_loc, use_relu=True, name='pool1_loc')
@@ -248,9 +256,12 @@ def main():
 	fc1_loc = Dense(pool2_loc_flat, pool2_loc_size, 2048, use_relu=False, name='fc1_loc')
 	fc2_loc = Dense(fc1_loc, 2048, 512, use_relu=True, name='fc2_loc')
 	fc3_loc = Dense(fc2_loc, 512, 6, use_relu=False, trans=True, name='fc3_loc')
-
+	print ('fc3_loc: {}'.format(fc3_loc.get_shape()))
+	
 	# spatial transformer
+	print ('X: {}'.format(X.get_shape()))
 	h_trans = stn(X, fc3_loc)
+	print ('h_trans: {}'.format(h_trans.get_shape()))
 
 	# convnet
 	conv1 = Conv2D(h_trans, 1, 5, 32, name='conv1')

@@ -80,6 +80,7 @@ def Flatten(layer):
 	maxpool2D to be used for a fully-connected (affine) layer.
 	"""
 	layer_shape = layer.get_shape()
+	print ('Flatten: {}'.format(layer_shape))
 	# num_features = tf.reduce_prod(tf.shape(layer)[1:])
 	num_features = layer_shape[1:].num_elements()
 	layer_flat = tf.reshape(layer, [-1, num_features])

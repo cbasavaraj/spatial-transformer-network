@@ -40,12 +40,16 @@ def spatial_transformer_network(input_fmap, theta, out_dims=None, **kwargs):
     """
     # grab input dimensions
     B = tf.shape(input_fmap)[0]
-    H = tf.shape(input_fmap)[1]
-    W = tf.shape(input_fmap)[2]
-    C = tf.shape(input_fmap)[3]
+    H = 60 # tf.shape(input_fmap)[1]
+    W = 60 # tf.shape(input_fmap)[2]
+    C = 60 # tf.shape(input_fmap)[3]
+    print ('input_fmap/shape: {}'.format(input_fmap))
+    print ('HWC: {}x{}x{}'.format(H, W, C))
+    print ('input_fmap: {}'.format(input_fmap.get_shape()))
 
     # reshape theta to (B, 2, 3)
     theta = tf.reshape(theta, [B, 2, 3])
+    print ('theta: {}'.format(theta.get_shape()))
 
     # generate grids of same size or upsample/downsample if specified
     if out_dims:
@@ -54,12 +58,15 @@ def spatial_transformer_network(input_fmap, theta, out_dims=None, **kwargs):
         batch_grids = affine_grid_generator(out_H, out_W, theta)
     else:
         batch_grids = affine_grid_generator(H, W, theta)
+        
+    print ('batch_grids: {}'.format(batch_grids.get_shape()))
 
     x_s = batch_grids[:, 0, :, :]
     y_s = batch_grids[:, 1, :, :]
 
     # sample input with grid to get output
     out_fmap = bilinear_sampler(input_fmap, x_s, y_s)
+    print ('out_fmap: {}'.format(out_fmap.get_shape()))
 
     return out_fmap
 
@@ -126,9 +133,14 @@ def affine_grid_generator(height, width, theta):
     num_batch = tf.shape(theta)[0]
 
     # create normalized 2D grid
+    print ('width: {}'.format(width))
+    print ('height: {}'.format(height))
+    
     x = tf.linspace(-1.0, 1.0, width)
     y = tf.linspace(-1.0, 1.0, height)
     x_t, y_t = tf.meshgrid(x, y)
+    print ('x: {}'.format(x.get_shape()))
+    print ('y: {}'.format(y.get_shape()))
 
     # flatten
     x_t_flat = tf.reshape(x_t, [-1])
@@ -136,11 +148,16 @@ def affine_grid_generator(height, width, theta):
 
     # reshape to [x_t, y_t , 1] - (homogeneous form)
     ones = tf.ones_like(x_t_flat)
+    print ('x_t_flat: {}'.format(x_t_flat.get_shape()))
+    print ('y_t_flat: {}'.format(y_t_flat.get_shape()))
+    print ('ones: {}'.format(ones.get_shape()))
     sampling_grid = tf.stack([x_t_flat, y_t_flat, ones])
+    print ('sampling_grid: {}'.format(sampling_grid.get_shape()))
 
     # repeat grid num_batch times
     sampling_grid = tf.expand_dims(sampling_grid, axis=0)
     sampling_grid = tf.tile(sampling_grid, tf.stack([num_batch, 1, 1]))
+    print ('sampling_grid: {}'.format(sampling_grid.get_shape()))
 
     # cast to float32 (required for matmul)
     theta = tf.cast(theta, 'float32')
